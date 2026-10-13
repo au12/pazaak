@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <base href="{{BASE}}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Pazaak admin</title>
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="admin/admin.css" />
+  </head>
+  <body>
+    <main>
+      <header><h1>Pazaak admin</h1><button id="signout" hidden>Sign out</button></header>
+      <form id="signin" hidden>
+        <p>Sign in with the server's ADMIN_PASSWORD.</p>
+        <input type="password" id="password" autocomplete="current-password" placeholder="Password" />
+        <button>Sign in</button>
+        <p class="err" id="err"></p>
+      </form>
+      <section id="dash" hidden>
+        <div class="stats" id="stats"></div>
+        <h2>Rooms</h2>
+        <div id="rooms"></div>
+        <h2>Recent activity</h2>
+        <ol id="activity"></ol>
+      </section>
+    </main>
+    <script type="module" src="admin/admin.js"></script>
+  </body>
+</html>

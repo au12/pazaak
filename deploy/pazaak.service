@@ -1,0 +1,17 @@
+[Unit]
+Description=Pazaak card table
+After=network.target
+
+[Service]
+Type=simple
+User=pazaak
+WorkingDirectory=/opt/pazaak
+Environment=NODE_ENV=production
+Environment=PORT=3002
+Environment=DATA_DIR=/var/lib/pazaak
+# Environment=ADMIN_PASSWORD=change-me
+ExecStart=/usr/bin/node server/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

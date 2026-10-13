@@ -1,0 +1,19 @@
+Nginx Proxy Manager: proxy host for Pazaak
+
+Details tab
+  Domain:            pazaak.example.com
+  Scheme / host:     http / <unraid ip>
+  Port:              3002
+  Websockets Support: ON   (required: the game runs over a WebSocket at /ws)
+
+Advanced tab, custom Nginx configuration: keep /admin to your own network.
+Change 10.0.10.0/24 to your LAN.
+
+  location /admin {
+      allow 10.0.10.0/24;
+      deny all;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_pass http://<unraid ip>:3002;
+  }

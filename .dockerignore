@@ -1,0 +1,8 @@
+node_modules
+data
+scratch
+test
+docs
+.git
+.github
+*.md

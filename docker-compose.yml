@@ -1,0 +1,21 @@
+services:
+  pazaak:
+    build: .
+    image: pazaak:latest
+    container_name: pazaak
+    restart: unless-stopped
+    ports:
+      - "3002:3000"   # host port 3002, so it can sit next to Tradecraft (3000) and Swipe (3001)
+    environment:
+      SITE_NAME: Pazaak
+      # CREATE_PASSWORD: "only-my-friends"   # require this to open a table
+      # ADMIN_PASSWORD: "a-long-password-of-your-own"   # turns on the admin page at /admin
+      # TRUST_PROXY: "1"                    # proxies in front of this (2 with Cloudflare too, 0 with none)
+      # BASE_PATH: /pazaak                  # if you serve it under a sub-path
+      # ROOM_TTL_HOURS: "48"
+      # BOT_DELAY_MS: "1100"                # how long the computer thinks before each move
+    volumes:
+      - ./data:/data
+    # The container runs as uid 1000. If ./data is owned by someone else
+    # (Unraid uses 99:100), set the matching ids here:
+    # user: "99:100"

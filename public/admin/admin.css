@@ -1,0 +1,29 @@
+@font-face { font-family: 'Chakra Petch'; src: url(../fonts/chakra-500.woff2) format('woff2'); font-weight: 500; }
+[hidden] { display: none !important; }
+@font-face { font-family: 'Michroma'; src: url(../fonts/michroma.woff2) format('woff2'); }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0e1922; color: #e7eef3; font: 500 15px/1.45 'Chakra Petch', system-ui, sans-serif; }
+main { width: min(1100px, 100%); margin: 0 auto; padding: 24px 16px 60px; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+h1 { font: 400 20px 'Michroma', sans-serif; margin: 0; }
+h2 { font-size: 15px; color: #93a4b2; margin: 28px 0 10px; font-weight: 600; }
+button { font: inherit; cursor: pointer; border: 0; border-radius: 8px; padding: 8px 14px; color: #e7eef3; background: #2b3844; }
+button:hover { filter: brightness(1.2); }
+button.danger { background: #7c1d23; }
+button.keep { background: #6b4a10; }
+input { font: inherit; padding: 10px 12px; border-radius: 8px; border: 0; background: #08111a; color: #e7eef3; box-shadow: 0 0 0 1px #2a3743; width: min(320px, 100%); }
+form { display: grid; gap: 10px; justify-items: start; }
+.err { color: #ff9a9e; min-height: 1.2em; margin: 0; }
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stats div { padding: 10px 14px; border-radius: 10px; background: #152430; box-shadow: 0 0 0 1px #26323c; }
+.stats b { display: block; font: 400 18px 'Michroma', sans-serif; color: #f3a73b; }
+.stats span { font-size: 13px; color: #93a4b2; }
+.room { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; padding: 14px 16px; border-radius: 12px; background: #152430; box-shadow: 0 0 0 1px #26323c; margin-bottom: 10px; }
+.room h3 { margin: 0; font-size: 16px; }
+.room h3 a { color: #ffd08a; text-decoration: none; }
+.meta { color: #93a4b2; font-size: 13.5px; }
+.actions { display: flex; gap: 6px; align-items: start; grid-row: span 3; grid-column: 2; }
+.on { color: #3bc97b; }
+.off { color: #5d6f7d; }
+.empty { color: #5d6f7d; }
+ol { padding-left: 20px; color: #93a4b2; font-size: 13.5px; }
