@@ -19,6 +19,16 @@ const cleanBase = (value) => {
   return trimmed ? `/${trimmed}` : '';
 };
 
+/** "https://arcade.example.com/anything" -> "https://arcade.example.com"; anything else -> "" */
+const cleanOrigin = (value) => {
+  try {
+    const url = new URL(String(value ?? '').trim());
+    return /^https?:$/.test(url.protocol) && url.host ? url.origin : '';
+  } catch {
+    return '';
+  }
+};
+
 export const config = {
   root,
   host: env.HOST || '0.0.0.0',
@@ -47,6 +57,9 @@ export const config = {
   // Computer players wait about this long before each move.
   botDelayMs: int('BOT_DELAY_MS', 1100, 0, 10000),
   messageBudget: int('MESSAGE_BUDGET', 40, 5, 100000),
+  // The au12 Arcade (github.com/au12/arcade) this game belongs to, if any. It
+  // may show the game in a frame, and wins and losses are reported to it.
+  arcadeUrl: cleanOrigin(env.ARCADE_URL),
   logLevel: env.LOG_LEVEL || 'info',
 };
 

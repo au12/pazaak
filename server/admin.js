@@ -77,7 +77,7 @@ export function createAdmin({ rooms, sockets, clientIp, isHttps, send, readJson,
     }
     if (pathname === '/admin' || pathname === '/admin/') {
       const html = fs.readFileSync(path.join(config.publicDir, 'admin', 'index.html'), 'utf8').replaceAll('{{BASE}}', `${config.basePath}/`);
-      send(res, 200, html, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      send(res, 200, html, { ...securityHeaders, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       return true;
     }
     if (!pathname.startsWith('/admin/api/')) return false; // its script and styles are ordinary files

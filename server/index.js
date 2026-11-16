@@ -6,6 +6,7 @@
 //   GET  /api/rooms/<code> does this room exist?    -> { exists, code, players }
 //   GET  /healthz          liveness probe
 //   GET  /admin            the admin page (off unless ADMIN_PASSWORD is set)
+//   GET  /arcade.json      where the arcade is (only with ARCADE_URL set)
 //   WS   /ws               game traffic (JSON messages)
 
 import http from 'node:http';
@@ -37,13 +38,23 @@ const MIME = {
 };
 const LONG_CACHE = new Set(['.woff2', '.wav', '.mp3', '.mp4']);
 
-const SECURITY_HEADERS = {
+const STRICT_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'same-origin',
   'X-Frame-Options': 'SAMEORIGIN',
   'Content-Security-Policy':
     "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' ws: wss:; base-uri 'self'; form-action 'self'",
 };
+
+// With an arcade configured, the game may be shown in its frame and may talk
+// to it. The admin page keeps the strict set either way.
+const SECURITY_HEADERS = config.arcadeUrl
+  ? {
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'same-origin',
+      'Content-Security-Policy': `default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self' ws: wss: ${config.arcadeUrl}; base-uri 'self'; form-action 'self'; frame-ancestors 'self' ${config.arcadeUrl}`,
+    }
+  : STRICT_HEADERS;
 
 export const rooms = new Rooms();
 rooms.load();
@@ -251,6 +262,12 @@ async function handle(req, res) {
   if (pathname.startsWith('/api/')) return send(res, 404, { error: 'Not found.' });
   if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method not allowed');
 
+  // Where the arcade is, for the arcade script when the game is opened on its own.
+  if (pathname === '/arcade.json') {
+    if (!config.arcadeUrl) return send(res, 404, { error: 'Not found.' });
+    return send(res, 200, { url: config.arcadeUrl }, { 'Cache-Control': 'no-cache' });
+  }
+
   if (pathname === '/manifest.webmanifest') {
     const manifest = JSON.parse(fs.readFileSync(path.join(config.publicDir, 'manifest.webmanifest'), 'utf8'));
     manifest.name = manifest.short_name = config.siteName;
@@ -265,7 +282,7 @@ async function handle(req, res) {
 // ───────────────────────── WebSocket ─────────────────────────
 
 const wss = new WebSocketServer({ noServer: true, maxPayload: 32 * 1024 });
-const admin = createAdmin({ rooms, sockets: () => wss.clients.size, clientIp, isHttps, send, readJson, securityHeaders: SECURITY_HEADERS });
+const admin = createAdmin({ rooms, sockets: () => wss.clients.size, clientIp, isHttps, send, readJson, securityHeaders: STRICT_HEADERS });
 
 server.on('upgrade', (req, socket, head) => {
   if (localPath(req.url) !== '/ws') return socket.destroy();
@@ -363,6 +380,7 @@ if (process.env.PAZAAK_NO_LISTEN !== '1') {
   server.listen(config.port, config.host, () => {
     log.info(`${config.siteName} is listening on http://${config.host}:${config.port}${config.basePath || ''}`);
     log.info(config.adminPassword ? `The admin page is at ${config.basePath}/admin` : 'The admin page is off. Set ADMIN_PASSWORD to turn it on.');
+    if (config.arcadeUrl) log.info(`Arcade: ${config.arcadeUrl} may show this game and receive its results`);
   });
 }
 
