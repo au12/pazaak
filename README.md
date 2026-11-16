@@ -130,6 +130,7 @@ The repository includes a GitHub Actions workflow ([`.github/workflows/docker-im
    | Port | container `3000`, host `3002` |
    | Path | container `/data`, host `/mnt/user/appdata/pazaak` |
    | Variable | `ADMIN_PASSWORD`, a long password of your own, for the admin page |
+   | Variable | `ARCADE_URL`, your arcade's address, if you run the [au12 Arcade](#in-the-arcade) |
 
 To update later, push, let the workflow finish, then **Check for Updates** on the Docker tab.
 
@@ -164,6 +165,20 @@ All optional, as environment variables.
 | `ROOM_TTL_HOURS` | `48` | How long an unused table is kept. A table with someone in it is never removed. |
 | `BOT_DELAY_MS` | `1100` | How long the computer thinks before each move. |
 | `MAX_ROOMS` | `500` | Tables the server holds at once. |
+| `ARCADE_URL` | (none) | Address of your [au12 Arcade](#in-the-arcade), such as `https://arcade.example.com`. Lets the arcade show the game and receive wins and losses. |
+
+## In the arcade
+
+Pazaak can run inside the [au12 Arcade](https://github.com/au12/arcade), the family launcher that puts every game behind one installable app, with shared players and high scores across the games (and a real cabinet, if you build one).
+
+Set `ARCADE_URL` to the arcade's address, for example `https://arcade.example.com`. Then:
+
+- Inside the arcade, your name is your arcade name, so picking Tobb, Vessa or Oru-Kaan sits you straight down. Each arcade player keeps a seat of their own, so the family can take turns at one screen.
+- While a seat is free, the arcade shows the table's link as a QR code, so a friend can join from their phone.
+- Every match you played and saw end counts as a win or a loss, against a person or against which computer. Matches earn tickets and go on the arcade's Pazaak leaderboards (all matches, and computers beaten), and beating each computer for the first time is an achievement.
+- Played on its own rather than inside the arcade, the page still reports to the arcade for whoever that browser last played as there. It finds the arcade through `/arcade.json`, which the server only answers when `ARCADE_URL` is set.
+
+The server lets the arcade's address show the game in a frame (`frame-ancestors`) and talk to it (`connect-src`). The admin page is never framed. With `ARCADE_URL` empty, nothing changes.
 
 ## Tests
 

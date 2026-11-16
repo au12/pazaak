@@ -11,19 +11,23 @@ import { renderLobby } from './lobby.js';
 import { Draft } from './draft.js';
 import { Table, EMOTE_TEXT } from './table.js';
 import * as R from './rules.js';
+import { arcadeInvite, arcadeName, arcadeReady, arcadeReport, arcadeStatus, personal } from './arcade.js';
 
 const CONFIG = JSON.parse(document.getElementById('config').textContent || '{}');
 const $ = (id) => document.getElementById(id);
 
 function token() {
-  let t = store.get('token', '');
+  let t = store.get(personal('token'), '');
   if (typeof t !== 'string' || t.length < 16) {
     const bytes = crypto.getRandomValues(new Uint8Array(18));
     t = btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, (c) => ({ '+': '-', '/': '_', '=': '' })[c]);
-    store.set('token', t);
+    store.set(personal('token'), t);
   }
   return t;
 }
+
+/** Your name here: the one you gave this table before, else your arcade name. */
+const myName = () => store.get(personal('name'), '') || arcadeName();
 
 const base = new URL(document.baseURI).pathname;
 const roomFromPath = () => {
@@ -51,7 +55,11 @@ class App {
     starfield($('stars'));
     if (store.get('calm', false)) document.body.classList.add('calm');
     window.addEventListener('popstate', () => this.route());
-    this.route();
+    // In the arcade, wait to hear who is playing: each player has a seat and a name of their own.
+    arcadeReady().then(() => {
+      $('home-name').value = myName();
+      this.route();
+    });
   }
 
   route() {
@@ -69,8 +77,8 @@ class App {
 
   setupHome() {
     const nameInput = $('home-name');
-    nameInput.value = store.get('name', '');
-    nameInput.addEventListener('change', () => store.set('name', nameInput.value.trim()));
+    nameInput.value = myName();
+    nameInput.addEventListener('change', () => store.set(personal('name'), nameInput.value.trim()));
 
     // The logo's hand of cards.
     const fan = $('logo-fan');
@@ -105,13 +113,13 @@ class App {
   }
 
   needName() {
-    const name = $('home-name').value.trim() || store.get('name', '');
+    const name = $('home-name').value.trim() || myName();
     if (!name) {
       toast('Put your name in first, so the table knows who you are.', { error: true });
       $('home-name').focus();
       return false;
     }
-    store.set('name', name);
+    store.set(personal('name'), name);
     return true;
   }
 
@@ -131,6 +139,8 @@ class App {
 
   showHome() {
     this.leave();
+    arcadeStatus('menu');
+    arcadeInvite(null);
     document.title = CONFIG.siteName ?? 'Pazaak';
     $('room').hidden = true;
     $('home').hidden = false;
@@ -139,7 +149,7 @@ class App {
   // ───────────────────────── a room ─────────────────────────
 
   enterRoom(code) {
-    const name = store.get('name', '');
+    const name = myName();
     if (!name) return this.askName(code);
     this.leave();
     $('home').hidden = true;
@@ -172,7 +182,7 @@ class App {
     const go = () => {
       const v = input.value.trim();
       if (!v) return input.focus();
-      store.set('name', v);
+      store.set(personal('name'), v);
       $('home-name').value = v;
       curtain.remove();
       this.enterRoom(code);
@@ -217,12 +227,16 @@ class App {
 
   onState(s) {
     const first = !this.state;
+    const prev = this.state;
     this.state = s;
+    arcadeReport(prev, s);
+    arcadeStatus(!s.match ? 'menu' : s.match.phase === 'over' ? 'over' : 'playing');
     this.skew = s.now - Date.now();
     if (s.code !== this.code) {
       this.code = s.code;
       history.replaceState({}, '', new URL(`r/${s.code}`, document.baseURI));
     }
+    arcadeInvite(s.seats.includes(null) ? this.inviteUrl() : null);
     // Practice against the computer: fill the other seat and start.
     if (first && this.pendingBot) {
       const lvl = this.pendingBot;
@@ -507,7 +521,7 @@ class App {
       music.value = String(Math.round((sound.musicOn ? sound.musicVolume : 0) * 100));
       sfx.value = String(Math.round(sound.sfxVolume * 100));
       calm.checked = document.body.classList.contains('calm');
-      name.value = store.get('name', '');
+      name.value = myName();
       now.textContent = sound.musicOn && sound.unlocked ? `Now playing: ${sound.track.title}` : '';
     });
     music.addEventListener('input', () => {
@@ -523,7 +537,7 @@ class App {
     name.addEventListener('change', () => {
       const v = name.value.trim();
       if (!v) return;
-      store.set('name', v);
+      store.set(personal('name'), v);
       $('home-name').value = v;
       if (this.conn) this.send('name', { name: v });
     });
